@@ -38,9 +38,6 @@ function Center() {
       .catch((err) => console.error(err));
   }, [spotifyAPI, playlistId]);
 
-  console.log("Default playlist >>> ", playlistId);
-  console.log("Session >>> ", session);
-
   return (
     <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide">
       <header className="absolute top-5 right-8">
