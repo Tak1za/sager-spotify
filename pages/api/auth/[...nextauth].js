@@ -4,13 +4,11 @@ import { LOGIN_URL } from "../../../lib/spotify";
 import {spotifyAPI} from "../../../lib/spotify";
 
 async function refreshAccessToken(token) {
-  console.log("refreshing token");
   try {
     spotifyAPI.setAccessToken(token.accessToken);
     spotifyAPI.setRefreshToken(token.refreshToken);
 
     const { body: refreshedToken } = await spotifyAPI.refreshAccessToken();
-    console.log("Refreshed token >>> ", refreshedToken);
     return {
       ...token,
       accessToken: refreshedToken.access_token,
@@ -42,7 +40,6 @@ export default NextAuth({
   },
   callbacks: {
     async jwt({ token, account, user }) {
-      console.log("Initial token >>> ", token);
       //initial signin
       if (account && user) {
         return {
