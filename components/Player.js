@@ -1,7 +1,4 @@
-import {
-  HeartIcon,
-  VolumeUpIcon as VolumeDownIcon,
-} from "@heroicons/react/outline";
+import { VolumeUpIcon as VolumeDownIcon } from "@heroicons/react/outline";
 import {
   PlayIcon,
   RewindIcon,
@@ -12,20 +9,25 @@ import {
   SwitchHorizontalIcon,
 } from "@heroicons/react/solid";
 import { debounce } from "lodash";
-import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
-import { currentTrackIdState, isPlayingState } from "../atoms/songAtom";
+import {
+  currentTrackIdState,
+  isPlayingState,
+  isShuffleState,
+  repeatState,
+} from "../atoms/songAtom";
 import useSongInfo from "../hooks/useSongInfo";
 import useSpotify from "../hooks/useSpotify";
 
 function Player() {
   const spotifyAPI = useSpotify();
-  const { data: session } = useSession();
   const [currentTrackId, setCurrentTrackId] =
     useRecoilState(currentTrackIdState);
   const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState);
   const [volume, setVolume] = useState(50);
+  const [repeatMode, setRepeatMode] = useRecoilState(repeatState);
+  const [isShuffle, setIsShuffle] = useRecoilState(isShuffleState);
   const songInfo = useSongInfo();
 
   const fetchCurrentSong = () => {
@@ -35,6 +37,8 @@ function Player() {
 
         spotifyAPI.getMyCurrentPlaybackState().then((data) => {
           setIsPlaying(data.body?.is_playing);
+          setIsShuffle(data.body?.shuffle_state);
+          setRepeatMode(data.body?.repeat_state);
         });
       });
     }
@@ -52,6 +56,28 @@ function Player() {
     });
   };
 
+  const handleShuffle = () => {
+    const currentIsShuffle = isShuffle;
+    spotifyAPI
+      .setShuffle(!isShuffle)
+      .then(() => setIsShuffle(!currentIsShuffle))
+      .catch((err) => console.error(err));
+  };
+
+  const handleRepeat = () => {
+    if (repeatMode == "off") {
+      spotifyAPI
+        .setRepeat("track")
+        .then(() => setRepeatMode("track"))
+        .catch((err) => console.error(err));
+    } else if (repeatMode == "track") {
+      spotifyAPI
+        .setRepeat("off")
+        .then(() => setRepeatMode("off"))
+        .catch((err) => console.error(err));
+    }
+  };
+
   const debouncedAdjustVolume = useCallback(
     debounce((volume) => {
       spotifyAPI.setVolume(volume).catch((err) => {});
@@ -60,7 +86,7 @@ function Player() {
   );
 
   useEffect(() => {
-    if (spotifyAPI.getAccessToken() && !currentTrackId) {
+    if (spotifyAPI.getAccessToken()) {
       fetchCurrentSong();
     }
   }, [currentTrackId, spotifyAPI]);
@@ -85,7 +111,10 @@ function Player() {
       </div>
 
       <div className="flex items-center space-x-4 justify-center">
-        <SwitchHorizontalIcon className="button" />
+        <SwitchHorizontalIcon
+          className={`button ${isShuffle ? "text-green-500" : ""}`}
+          onClick={handleShuffle}
+        />
         <RewindIcon className="button" />
         {isPlaying ? (
           <PauseIcon className="button w-10 h-10" onClick={handlePlayPause} />
@@ -93,7 +122,10 @@ function Player() {
           <PlayIcon className="button w-10 h-10" onClick={handlePlayPause} />
         )}
         <FastForwardIcon className="button" />
-        <ReplyIcon className="button" />
+        <ReplyIcon
+          className={`button ${repeatMode === "track" ? "text-green-500" : ""}`}
+          onClick={handleRepeat}
+        />
       </div>
 
       <div className="flex items-center space-x-3 md:space-x-4 justify-end pr-5">

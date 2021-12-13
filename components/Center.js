@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from "@heroicons/react/outline";
+import { ChevronDownIcon, PlayIcon } from "@heroicons/react/solid";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { shuffle } from "lodash";
@@ -7,6 +7,7 @@ import { playlistIdState, playlistState } from "../atoms/playlistAtom";
 import useSpotify from "../hooks/useSpotify";
 import Songs from "./Songs";
 import { signOut } from "next-auth/react";
+import { currentTrackIdState } from "../atoms/songAtom";
 
 const colors = [
   "from-indigo-500",
@@ -24,6 +25,25 @@ function Center() {
   const [color, setColor] = useState(null);
   const playlistId = useRecoilValue(playlistIdState);
   const [playlist, setPlaylist] = useRecoilState(playlistState);
+  const [_, setCurrentTrackId] =
+    useRecoilState(currentTrackIdState);
+
+  const pickTrackToPlayFromPlaylist = () => {
+    let shuffledItem = shuffle(playlist?.tracks?.items).pop();
+    let trackId = shuffledItem.track?.id;
+    let trackURI = shuffledItem.track?.uri;
+    setCurrentTrackId(trackId);
+    return trackURI;
+  };
+
+  const handleStartPlaylist = () => {
+    spotifyAPI.play({
+      context_uri: playlist?.uri,
+      offset: {
+        uri: pickTrackToPlayFromPlaylist(),
+      },
+    });
+  };
 
   useEffect(() => {
     setColor(shuffle(colors).pop());
@@ -57,6 +77,7 @@ function Center() {
         <div>
           <p>PLAYLIST</p>
           <h1 className="text-2xl md:text-3xl xl:text-5xl">{playlist?.name}</h1>
+          <PlayIcon className="button-big" onClick={handleStartPlaylist} />
         </div>
       </section>
 

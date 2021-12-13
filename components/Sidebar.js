@@ -14,7 +14,7 @@ import useSpotify from "../hooks/useSpotify";
 function Sidebar() {
   const spotifyAPI = useSpotify();
   const [playlists, setPlaylists] = useState([]);
-  const [playlistId, setPlaylistId] = useRecoilState(playlistIdState);
+  const [_, setPlaylistId] = useRecoilState(playlistIdState);
 
   useEffect(() => {
     if (spotifyAPI.getAccessToken()) {
