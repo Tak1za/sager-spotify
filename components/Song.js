@@ -5,9 +5,9 @@ import { millisToMinutesAndSeconds } from "../lib/time";
 
 function Song({ order, track }) {
   const spotifyAPI = useSpotify();
-  const [_, setCurrentTrackId] =
+  const [currentTrackId, setCurrentTrackId] =
     useRecoilState(currentTrackIdState);
-  const [_, setIsPlaying] = useRecoilState(isPlayingState);
+  const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState);
 
   const playSong = () => {
     setCurrentTrackId(track?.track?.id);

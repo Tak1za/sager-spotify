@@ -25,7 +25,7 @@ function Center() {
   const [color, setColor] = useState(null);
   const playlistId = useRecoilValue(playlistIdState);
   const [playlist, setPlaylist] = useRecoilState(playlistState);
-  const [_, setCurrentTrackId] =
+  const [currentTrackId, setCurrentTrackId] =
     useRecoilState(currentTrackIdState);
 
   const pickTrackToPlayFromPlaylist = () => {
